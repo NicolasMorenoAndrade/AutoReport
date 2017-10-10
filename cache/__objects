@@ -1,0 +1,6 @@
+load	basicos	infobasicadf	listacolegios	nombreninio	pindivecc	rankingseccole	advenio	crucelabsadvenio	generales	pindivA	pindivB	proyeccion
+rankings	.Random.seed
+pindiv	op	puestos	puestospermil
+graphuniv	dfgraph	temp	tempdf	uniperc
+graphcarr	carreras	df	formateardatoscarreras	labelporcests	labelscarreras	numerizarcolumnas
+tabcriterios	colcrits	colsinteres	criterios_xtable	criteriosdf	crucelabsadvenio	infadvenio	obscriterios	seleccionados	seleccionarlabelsadvenio	todosloscriterios

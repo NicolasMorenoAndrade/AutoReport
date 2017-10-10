@@ -1,0 +1,88 @@
+\ProvidesPackage{eccoleinfoauto}[2014/08/21 Example package]
+ 
+\RequirePackage{imakeidx}
+\RequirePackage{xstring}
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+\RequirePackage{lastpage}
+
+
+
+\definecolor{greycolour}{HTML}{525252}
+\definecolor{sharelatexcolour}{HTML}{882B21}
+\definecolor{mybluecolour}{HTML}{394773}
+\definecolor{NMdarkgray}{RGB}{102,102,102}
+\definecolor{NMgray}{RGB}{153,153,153}
+\definecolor{Pipegray}{HTML}{666666}
+
+
+
+\newcommand{\wordcolour}{greycolour}
+\newcommand{\thedate}{\today} 
+\newcommand{\thetitle}{Informe comparativo de colegios}
+\newcommand{\thekid}{PEDROPEREZPEREZ}
+
+
+ 
+ \newcommand{\globalcolor}[1]{%
+  \color{#1}\global\let\default@color\current@color
+  }
+
+\DeclareOption{red}{\renewcommand{\wordcolour}{sharelatexcolour}}
+\DeclareOption{blue}{\renewcommand{\wordcolour}{mybluecolour}}
+\DeclareOption*{\PackageWarning{eccoleinfoauto}{Unknown ‘\CurrentOption’}}
+\ProcessOptions\relax
+ 
+\newcommand\BackgroundPic{%
+\ifnum\thepage>1\relax
+	  \includegraphics[width=\paperwidth,height=\paperheight]{Backgrounds/FondoAdvenio.pdf}
+	\else
+	  \put(-3,-0.5){
+    \parbox[b][\paperheight]{\paperwidth}{%
+    \vfill
+    \centering
+    \includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{Backgrounds/portada.pdf}
+    \vfill
+    }}
+  \fi
+}
+
+
+\newcommand\makeeccoletitle{%
+\begin{titlepage}
+\begin{minipage}{0.93\textwidth}
+\vspace{125mm}
+\begin{center}
+{\LARGE\thekid\par}
+\vspace{70mm}
+\thedate
+\end{center}
+\end{minipage}
+\end{titlepage}
+}
+
+%new environment for easily changin	g margins
+\newenvironment{changemargin}[2]{%
+\begin{list}{}{%
+\setlength{\headsep}{100pt}%
+\setlength{\leftmargin}{#1}%
+\setlength{\rightmargin}{#2}%
+\setlength{\listparindent}{\parindent}%
+\setlength{\itemindent}{\parindent}%
+\setlength{\parsep}{\parskip}%
+}%
+\item[]}{\end{list}}
+
+
+%%Numbered environment
+\newcounter{example}[section]
+\newenvironment{example}[1][]{\refstepcounter{example}\par\medskip
+\noindent \textbf{My~environment~\theexample. #1} \rmfamily}{\medskip}
+ 
+%%Important words are added to the index and printed in different colour
+\newcommand{\important}[1]
+{\IfSubStr{#1}{!}
+    {\textcolor{\wordcolour}{\textbf{\StrBefore{#1}{!}~\StrBehind{#1}{!}}}\index{#1}}
+    {\textcolor{\wordcolour}{\textbf{#1}}\index{#1}\kern-1pt}
+}
+

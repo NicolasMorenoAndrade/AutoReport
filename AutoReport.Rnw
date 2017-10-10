@@ -1,0 +1,423 @@
+
+\documentclass[letterpaper, 12pt]{book}
+%Éccole latex package to control automatic report
+\usepackage[red]{eccoleinfoauto}
+%option de geometry: [showframe] para trabajar en las margenes
+% \usepackage[showframe]{geometry}
+\usepackage{geometry}
+\usepackage[final]{pdfpages}
+\usepackage{fontspec}
+\defaultfontfeatures{Ligatures=TeX}
+\usepackage{fancyhdr} % to change header and footers
+\usepackage[spanish]{babel}
+\usepackage{float}
+\usepackage[font=small,labelfont=bf, labelformat=empty]{caption}
+\usepackage{comment}
+\usepackage{ragged2e}
+\usepackage{graphicx}
+%\usepackage[latin1]{inputenc}
+\usepackage{eso-pic}
+\usepackage{xcolor}
+\usepackage{array}
+
+
+\setmainfont[
+ BoldFont={Montserrat-ExtraBold},
+ ]{Montserrat-Regular}
+
+%margenes: para verlas en el pdf: opcion [showframe]  en el \usepackage
+\geometry{
+ letterpaper,
+ textwidth=170mm,
+ textheight=231mm,
+ footskip=30pt,
+ lmargin=2.4cm,
+ top=26mm
+ %rmargin=1cm
+}
+
+%Color principal del texto
+\AtBeginDocument{\globalcolor{Pipegray}}
+
+<<setup, include=FALSE, cache=FALSE>>=
+library(knitr)
+# set global chunk options
+opts_chunk$set(cache=TRUE, cache.rebuild=TRUE, autodep = TRUE)# cache.path = "~/Desktop/GMMSaS/Advenio/InformeAdvenio/cache/", fig.path = "~/Desktop/GMMSaS/Advenio/InformeAdvenio/figure/")
+@
+
+<<load, cache=TRUE, echo=FALSE, warning=FALSE, message=FALSE,include=FALSE, cache.rebuild=TRUE>>=
+#load necessary packages
+rm(list=ls())
+library(knitr)
+library(ggplot2)
+library(xtable)
+library(plotrix)
+library(gridExtra)
+library(RColorBrewer)
+library(reshape2)
+library(plyr)
+library(Eccolepack)
+#Nombre ninio
+#listacolegios<-listareporte
+nombreninio<-"Agustín Ramírez Carrizosa"
+#key dfs para las GRAFICAS
+#lista colegios
+#opts_chunk$set(cache.extra = tools::md5sum('listareporte'))
+listacolegios=c(24299,19349,19364,43562)
+#listareporte=c(19406,19349,19422,22848)
+load("~/Desktop/EccoleR/DataFrames/rankingseccole.RData")
+load("~/Desktop/EccoleR/DataFrames/pindiveccole.RData")
+load("~/Desktop/EccoleR/DataFrames/generales.RData")
+load("~/Desktop/EccoleR/DataFrames/proyeccion.RData")
+#fix nombre columna anio
+names(rankingseccole)[names(rankingseccole)=="Año"]<-"Anio"
+
+names(pindivecc)[names(pindivecc)=="Año"]<-"Anio"
+#key df para la tabla comparativa
+load("~/Documents/GMMSaS/Advenio/InformeAdvenio/advenioeccole.RData")
+load("~/Documents/GMMSaS/Advenio/InformeAdvenio/crucelabsadvenio.RData")
+#Nombres colegios seleccionados
+basicos<-generales[generales$Codigocolegio%in%listacolegios,c("Codigocolegio","Telefono1",
+                                                                   "Ciudad")]
+infobasicadf<-merge(basicos,crucecodigos[,c("Codigocolegio","Nomlabel")], by="Codigocolegio")
+@
+
+%Nombre del Niño
+\AtBeginDocument{\renewcommand{\thekid}{\Sexpr{nombreninio}}}
+
+
+
+%columna ancho fijo texto centrado
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+
+\pagestyle{fancy}
+\fancyhf{} % Clear all in the header and footer
+%set to zero default fancy header line
+\renewcommand{\headrulewidth}{0pt}
+% Set the page number at center of the footer
+\fancyfoot[C]{\thepage}
+
+
+
+
+
+\begin{document}
+%Within eccoleinfoauto.sty \BackgroundPic displays BG pictures
+
+\AddToShipoutPicture{\BackgroundPic}
+
+%env changemargin defined in eccoleinfoauto.sty
+%\end(changemargin) right before \end{document}
+%\begin{changemargin}{0cm}{0cm}
+%eccoleinfoauto::customized design for title page
+\makeeccoletitle
+%\end{changemargin}
+
+\begin{center}
+{\bf\Huge{COLEGIOS}}\\
+\vspace{0.1cm}
+ Información Básica
+\end{center}
+
+\vspace{6cm}
+\begin{center}
+{\bf\Large{\Sexpr{toupper(infobasicadf[1,"Nomlabel"])}}}\\
+\vspace{0.1cm}
+\Sexpr{infobasicadf[1,"Ciudad"]}. Tel: \Sexpr{infobasicadf[1,"Telefono1"]}.\\
+
+\vspace{1cm}
+{\bf\Large{\Sexpr{toupper(infobasicadf[2,"Nomlabel"])}}}\\
+\vspace{0.1cm}
+\Sexpr{infobasicadf[2,"Ciudad"]}. Tel: \Sexpr{infobasicadf[2,"Telefono1"]}.
+
+\vspace{1cm}
+{\bf\Large{\Sexpr{toupper(infobasicadf[3,"Nomlabel"])}}}\\
+\vspace{0.1cm}
+\Sexpr{infobasicadf[3,"Ciudad"]}. Tel: \Sexpr{infobasicadf[3,"Telefono1"]}.
+
+\vspace{1cm}
+{\bf\Large{\Sexpr{toupper(infobasicadf[4,"Nomlabel"])}}}\\
+\vspace{0.1cm}
+\Sexpr{infobasicadf[4,"Ciudad"]}. Tel: \Sexpr{infobasicadf[4,"Telefono1"]}.
+\end{center}
+
+\newpage
+\begin{center}
+{\bf\Huge{RANKINGS EN SABER 11}}\\
+\vspace{0.1cm}
+ Puesto de los colegios a nivel nacional en el periodo 2005-2015
+\end{center}
+\vspace{2cm}
+\begin{center}
+<<rankings, fig.env='figure', echo=FALSE, fig.pos='H',fig.height=6, fig.width=8,warning=FALSE,out.width='.9\\linewidth',fig.cap='El ranking se calcula promediando los resultados de cada colegio en cada materia de la prueba SABER 11. Fuente: ICFES'>>=
+#plot de lineas
+
+ggplot(data=rankingseccole[is.element(rankingseccole$Codigocolegio, listacolegios),], aes(x=Anio, y=Ranking),
+       group=Nomlabel)+
+  #scale_colour_brewer(palette="Set2", name="")+
+  geom_line(aes(colour=Nomlabel), size=1.1,linetype="dashed")+
+  scale_x_continuous(breaks=c(2005:2015),labels=c(2005:2015))+
+  scale_y_continuous(breaks=c(1,50,100,150,200), tran="reverse")+
+  geom_point(aes(colour=Nomlabel),shape = 0,         # Hollow squares
+             size = 5)+          # Large points
+  ylab("Ranking")+theme(legend.position="bottom")+
+  guides(colour = guide_legend(nrow = 2))
+
+@
+\end{center}
+
+\newpage
+\begin{center}
+{\bf\Huge{PUESTOS INDIVIDUALES EN SABER 11}}\\
+\vspace{0.1cm}
+ Puesto de los colegios a nivel nacional en el periodo 2005-2015
+\end{center}
+\vspace{2cm}
+\begin{center}
+<<pindiv, fig.env='figure', echo=FALSE, fig.pos='H',fig.height=6, fig.width=8,warning=FALSE,out.width='.9\\linewidth',fig.cap='Cada estudiante obtiene un puesto entre el 1 y el 1000. Obtener el puesto 100 significa obtener un resultado superior al 90\\% del país.'>>=
+
+#plot de pustos individuales primer colegio de la lista
+puestos<-pindivecc[pindivecc$Codigocolegio==listacolegios[1],c("Anio", "Puesto")]
+    puestospermil<-data.frame(Anio=puestos$Anio, Puesto=1000-puestos$Puesto)
+    #hacer el plot. reversar el eje con axis.pintar de azul del 999(1) al 900(100), verde, rojo etc.
+    op <- par(mar = c(0,4,4,1))
+    plot(puestospermil$Anio, puestospermil$Puesto, axes=F,
+         col=ifelse(puestospermil$Puesto<800,"red4",ifelse(puestospermil$Puesto<900,"green4","blue4")),
+         pch=18,ylab="", xlab="")
+    title(buscarporcod(listacolegios[1]), line = 2.6)
+    mtext("Puesto", side=2, line=2.5)
+    axis(side=2, at=c(200, 400, 600, 800, 900, 999), labels=c(800, 600, 400, 200,100, 1), las=1)
+    axis(side=3, at=c(2005:2016), labels=c(2005:2016))
+    par(op)
+
+@
+\end{center}
+
+\newpage
+\begin{center}
+{\bf\Huge{UNIVERSIDADES}}\\
+\vspace{0.1cm}
+ Porcentaje de exalumnos de cada colegio graduados de las universidades del país en el periodo 2011-2015.
+\end{center}
+\vspace{2cm}
+\begin{center}
+<<graphuniv, fig.env='figure', echo=FALSE, fig.pos='H',fig.height=6, fig.width=9.5,warning=FALSE,out.width='.9\\linewidth',fig.cap=' '>>=
+
+#modificacion class de uniperc de "data.frame" a c("data.frame", "grdata.uni")
+uniperc$Nomlabel<-NULL
+temp<-uniperc
+uniperc<-merge(uniperc,crucecodigos[,c("Codigocolegio","Nomlabel")],by="Codigocolegio")
+tempdf<-grdatacreator(uniperc, type="uni")
+
+
+#FIX adhoc. Arreglar los noms de las columnas de la copia con clase "grdata.uni" de uniperc
+#el grdatacreator deja las columnas con numero con X2012 (el lenguaje no permite columnas
+#nombradas con numero. pero para plottear esas columnas deben corresponder #con los codigos
+#de las universidades. Esto hay que pasarlo a Eccolepack. Tal vez en un .R nuevo? fixes.R?
+#directo en grdatacreator?
+# fixcolcoduni<-function(x) unlist(strsplit(x, split = "X"))[2]
+# colcoduni<-names(tempdf)[!names(tempdf)%in%c("Codigocolegio","Otras","Nomlabel")]
+# colcoduni<-unlist(lapply(colcoduni,fixcolcoduni))
+# names(tempdf)[!names(tempdf)%in%c("Codigocolegio","Otras","Nomlabel")]<-colcoduni
+
+#Formatear los datos. dfgraph es el data frame a plotear.
+dfgraph<-grdataformat(x=tempdf, graflista=listacolegios)
+grdataplot(dfgraph)
+@
+\end{center}
+
+\newpage
+\begin{center}
+{\bf\Huge{CARRERAS}}\\
+\vspace{0.1cm}
+ Porcentaje de exalumnos de cada colegio graduados de las universidades del país en el periodo 2011-2015.
+\end{center}
+\vspace{2cm}
+\begin{center}
+<<graphcarr, fig.env='figure', echo=FALSE, fig.pos='H',fig.height=6,fig.width=8,warning=FALSE,out.width='.9\\linewidth',fig.cap=' '>>=
+#recibe el vector de nombres carreras a ver retorna el df en el formato para ggplot barras y porcentaje
+#-----------------------Listas------------------------
+carreras<-c("Sinclasificar", "Mateciencias","Ingearqui","Econoadmi",
+                  "Socihuma","Cciassalud","Cciaseduc",
+                  "Bellasartes","Agrovete")
+
+labelscarreras<-c("Sin clasificar", "Matemáticas y ciencias","Ingeniería y arquitectura","Economía y administración",
+                  "Sociales y humanidades","Ciencias de la salud","Ciencias de la educación",
+                  "Bellas artes","Agronomía y veterinaria")
+
+numerizarcolumnas<-function(df){
+  #el if es para garantizar que df es dataframe de lo contrario arroja error
+  if(is.data.frame(df)){
+  for(i in 1:length(colnames(df))){
+      if(is.factor(df[,i])){
+      df[,i]<-as.numeric(as.character(df[,i]))
+      }
+    }
+  }
+  else{
+    stop("class(df)  en numerizarcolumnas(df), != data.frame" )
+  }
+  return(df)
+}
+
+
+
+formateardatoscarreras <- function(lista) {
+  #en temp queda el df de codigos de la lista
+  temp <-proyeccion[is.element(proyeccion$Codigocolegio, lista),
+                    c("Codigocolegio", "Nombre",carreras)]
+  #agrega Nomlabel
+  temp <-merge(temp,crucecodigos[,c("Codigocolegio","Nomlabel")],
+               by = "Codigocolegio", all.x = TRUE)
+  carpct <- as.data.frame(t(temp))
+  #borrar las entradas superfluas de la transpuesta
+  carpct <-as.data.frame(carpct[is.element(row.names(carpct),
+                                c("Codigocolegio","Nomlabel", "Nombre")) ==  FALSE,])
+  #pone de nombres de las columnas los nombres de los colegios
+  colnames(carpct) <- t(temp$Nomlabel)
+  #volver numericas las columnas
+  carpct <- numerizarcolumnas(carpct)
+  #crear la columna Carrera
+  carpct$Carrera <- row.names(carpct)
+  #melt carpct
+  carpctmelt <- melt(carpct, id = c("Carrera"))
+
+  #ahora solo se modifica nivpctmelt y se le agrega el total de padres con nivtotmelt
+  names(carpctmelt)[names(carpctmelt) == "variable"] <- "Colegio"
+  names(carpctmelt)[names(carpctmelt) == "value"] <- "Percent"
+
+  carpctmelt$Percent <- carpctmelt$Percent * 100
+  carpctmelt$Amount <- carpctmelt$Percent
+
+  # Format the labels and calculate their positions
+  df <- ddply(carpctmelt, .(Colegio), transform, pos = (cumsum(Amount) - 0.5 * Amount))
+  df$Label <- ifelse((df$Percent*100)>=3,paste0(sprintf("%.0f", df$Percent), "%"),"")
+  # df$Label <- paste0(sprintf("%.0f", df$Percent), "%")
+  return(df)
+}
+
+
+df<-formateardatoscarreras(lista=listacolegios)
+
+labelporcests<-"Porcentaje de estudiantes"
+df$Carrera <- factor(df$Carrera, levels = carreras)
+
+
+
+# df <- df[order(df$Carrera),]
+  # Plot
+  print(
+    ggplot(df, aes(x = factor(Colegio), y = Amount, fill = Carrera)) +
+    geom_bar(stat = "identity", width = .7) +
+    geom_text(aes(y = 100 - pos, label = Label), size = 3.5) +
+    ylab(labelporcests)+
+    xlab("Colegio")+
+    theme(legend.position="top")+
+    guides(fill=guide_legend(nrow=3))+
+    scale_fill_brewer(name="Carreras",
+                        breaks=carreras,labelscarreras, palette="Set3")+
+    coord_flip()
+    )
+
+@
+\end{center}
+
+
+
+
+\newpage
+\begin{center}
+{\bf\Huge{COMPARACION DE COLEGIOS}}\\
+\vspace{0.1cm}
+ Según los criterios elegidos por la familia de \Sexpr{nombreninio}
+\end{center}
+
+
+\vspace{1cm}
+
+<<tabcriterios, results='asis', echo=FALSE, fig.pos='H', warning=FALSE>>=
+
+
+todosloscriterios<-names(advenio)[names(advenio)!="Codigocolegio"]
+#para el ejemplo columnas aleatorias por numero
+seleccionados<-sample(20:length(todosloscriterios),7)
+colsinteres <- names(advenio[,seleccionados])
+infadvenio<- advenio[advenio$Codigocolegio%in%listacolegios, c("Codigocolegio",colsinteres)]
+infadvenio<- merge(infadvenio,crucecodigos[,c("Codigocolegio","Nomlabel")], by="Codigocolegio")
+
+#Funcion de seleccion de labels Advenio. en crucelabsadvenio
+seleccionarlabelsadvenio<-function(columnas){
+as.numeric(sapply(columnas,function(x) grep(x,crucelabsadvenio$Criterios)))
+}
+
+criteriosdf<-infadvenio[,c("Nomlabel",colsinteres)]
+#usar crucelabsadvenio para los labels de criterios
+names(criteriosdf)[names(criteriosdf)=="Nomlabel"]<-"Colegio"
+colcrits<-names(criteriosdf)[names(criteriosdf)%in%crucelabsadvenio$Criterios]
+crucelabsadvenio$Coladvlab1<-as.character(crucelabsadvenio$Coladvlab1)
+ names(criteriosdf)[names(criteriosdf)%in%crucelabsadvenio$Criterios] <-
+                                      crucelabsadvenio[seleccionarlabelsadvenio(colcrits), "Coladvlab1"]
+
+ obscriterios<-crucelabsadvenio[seleccionarlabelsadvenio(colcrits),"Observaciones"]
+
+ #transponer
+ row.names(criteriosdf)<-criteriosdf$Colegio
+ criteriosdf$Colegio<-NULL
+ criteriosdf<-as.data.frame(t(criteriosdf))
+
+criterios_xtable<-xtable(criteriosdf)
+
+align(criterios_xtable) <- c('C{1in}', rep('C{1in}',4) )
+print(criterios_xtable)
+@
+
+\vspace{0.5cm}
+
+\begin{itemize}
+\item \Sexpr{as.character(obscriterios[1])}
+\item \Sexpr{as.character(obscriterios[2])}
+\item \Sexpr{as.character(obscriterios[3])}
+\item \Sexpr{as.character(obscriterios[4])}
+\item \Sexpr{as.character(obscriterios[5])}
+\item \Sexpr{as.character(obscriterios[6])}
+\item \Sexpr{as.character(obscriterios[7])}
+\end{itemize}
+\newpage
+
+%\ContraPortada
+\ClearShipoutPicture
+\includepdf{Backgrounds/contraportada.pdf}
+\end{document}
+
+
+%FIN DEL DOCUMENTO
+%en el comment van ejemplos de usos de las opciones red, blue del eccooleinfauto.sty
+\begin{comment}
+\noindent
+Let's begin with a simple working example here.
+
+
+\section{Introduction}
+In this document a new package is tested. This package allows special numbered
+environments
+
+\begin{example}
+This text is inside a special environment, some boldface text is printed
+at the beginning and a new indentation is set.
+\end{example}
+
+Also, there's a special command for \important{important!words} that will be
+printed in a special \important{colour} depending on the parameter used in the
+\important{package} importation statement. Because it's \important{important}.
+
+
+
+
+\section{colegios}
+
+The Monty Hall problem...
+The Monty...
+
+
+\end{comment}

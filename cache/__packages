@@ -1,0 +1,10 @@
+base
+knitr
+RColorBrewer
+ggplot2
+plyr
+reshape2
+Eccolepack
+xtable
+plotrix
+gridExtra
